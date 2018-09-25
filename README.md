@@ -63,16 +63,16 @@ The ```--prod``` flag teels the cli to makle a production build with optimized s
  nginx we create a new file called ```Dockerfile```. In this file we can tell Docker about the steps to take:
 
 ```sh
-// Get the nginx image in the alpine version
+# Get the nginx image in the alpine version
 FROM nginx:alpine
 
-// Copy th nginx.con file to the configuration folder within the image
+# Copy th nginx.con file to the configuration folder within the image
 COPY nginx.conf /etc/nginx/nginx.conf
 
-// Create a working directory where our main html content (which should be served) will be stored.
+# Create a working directory where our main html content (which should be served) will be stored.
 WORKDIR /usr/share/nginx/html
 
-// Copy all of our assets into this folder
+# Copy all of our assets into this folder
 COPY dist/dockerizedAngular .
 ```
 - To finish the dockerization of our Angular application we create a new script in our ```package.json```:
