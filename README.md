@@ -7,7 +7,7 @@ This is a example project to show how to dockerize an Angular6 App and run it on
 #### Setup Angular
 - First of all please make sure to have the latest Angular Version installed. You can check that by typing:
 ```sh
-$ ng --version
+$ ng version
 ```
 - If Angular is not installed, please install it with:
 ```sh
@@ -73,7 +73,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 WORKDIR /usr/share/nginx/html
 
 // Copy all of our assets into this folder
-COPY dist/ .
+COPY dist/dockerizedAngular .
 ```
 - To finish the dockerization of our Angular application we create a new script in our ```package.json```:
 ```sh
