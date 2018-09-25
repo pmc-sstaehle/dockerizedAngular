@@ -1,27 +1,95 @@
-# DockerizedAngular
+# Dockerized Angular6 Application
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.2.2.
+This is a example project to show how to dockerize an Angular6 App and run it on a docker host. PLease make sure to have Docker installed on your host machine!!
 
-## Development server
+### How to:
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+#### Setup Angular
+- First of all please make sure to have the latest Angular Version installed. You can check that by typing:
+```sh
+$ angular --version
+```
+- If Angular is not installed, please install it with:
+```sh
+$ npm install -g @angular/cli
+```
+- Create a new Angular project by using the Angular cli with the following command: 
+```sh
+$ ng new dockerizedAngular
+```
+- When the Angular cli setup your project successfully, you can try to run it via:
+```sh
+$ ng serve
+```
+After that you should be able to check out your app on: [http://localhost:4200]
 
-## Code scaffolding
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+#### Dockerize Application
+- The best and prefered way to serve an angular application is to do this by using nginx. nginx is a lightweight webserver which is publicly available as an image on Dockerhub. nginx needs a configuration file which will be used later. Therefore please create a new file called nginx.conf in the root of your project and paste in the following contents. You don't have to understand the contents in all depth by now.
+```sh
+worker_processes  1;
 
-## Build
+events {
+    worker_connections  1024;
+}
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+http {
+    server {
+        listen 80;
+        server_name  localhost;
 
-## Running unit tests
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        include /etc/nginx/mime.types;
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+        gzip on;
+        gzip_min_length 1000;
+        gzip_proxied expired no-cache no-store private auth;
+        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 
-## Running end-to-end tests
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+}
+```
+- The next step is to build our application by using the Angular cli:
+```sh
+$ ng build --prod
+```
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+The ```--prod``` flag teels the cli to makle a production build with optimized scripts and assets.
+- To make your application runnable on Docker within (the webserver)
+ nginx we create a new file called ```Dockerfile```. In this file we can tell Docker about the steps to take:
 
-## Further help
+```sh
+// Get the nginx image in the alpine version
+FROM nginx:alpine
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+// Copy th nginx.con file to the configuration folder within the image
+COPY nginx.conf /etc/nginx/nginx.conf
+
+// Create a working directory where our main html content (which should be served) will be stored.
+WORKDIR /usr/share/nginx/html
+
+// Copy all of our assets into this folder
+COPY dist/ .
+```
+- To finish the dockerization of our Angular application we create a new script in our ```package.json```:
+```sh
+"buildDocker": "ng build --prod && docker image build -t dockerized-angular-app ."
+```
+This command will do the automating in the creation of our Docker image. The command should finish and your image should be created successfully.
+
+- You can now run your application by typing in your hosts cli:
+```sh
+$ docker run -p 3000:80 dockerized-angular-app
+``` 
+
+This command starts the image within a docker container and lets you browse it: ```http://localhost:3000```
+
+
+[//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
+
+
+   [http://localhost:4200]: <http://localhost:4200>
